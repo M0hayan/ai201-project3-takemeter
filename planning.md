@@ -37,7 +37,7 @@ Threads often contain sarcastic dismissals or “this is dumb” replies. It als
 https://www.reddit.com/r/AskReddit/comments/1ommxw2/whats_something_that_instantly_makes_you_lose/
 has comments like: sarcasm aimed at groups of people and bad-faith generalizations (“all X are idiots”).
 
-**Edge cases post examples (unsure about which label)**
+**Edge 1s post examples (unsure about which label)**
 Constructive Vs Low Effort
 https://www.reddit.com/r/AskReddit/comments/145zqnb/whats_an_important_lesson_you_learnt_the_hard_way/
 
@@ -75,7 +75,7 @@ Low-effort is the default fallback when nothing meaningful is happening
 2. Define “hard rules” for common ambiguity
 A. Sarcasm vs insult
 “People are idiots” → Disruptive
-“Yeah sure, because that totally makes sense 🙄” → Low-effort
+“Yeah sure, because that totally makes sense” → Low-effort
 
 Rule:
 
@@ -124,6 +124,92 @@ Example:
 “This comment could be Low-effort or Disruptive. Chose Disruptive because it directly insults a group.”
 
 we would need ~15–30 of these for the report.
+
+*Edge case descriptions and summary of handling rules for each:*
+1. Constructive vs Low-Effort
+Edge Case Description
+
+Short answers that express a “correct-sounding” idea but lack explanation or context.
+
+Ambiguity
+Could be seen as a valid insight (Constructive)
+Or as a generic one-liner (Low-Effort)
+Examples
+“Don’t trust people too easily.”
+“Money doesn’t buy happiness.”
+Decision Rule
+If there is no explanation, story, or reasoning → Low-Effort
+If there is context, example, or explanation → Constructive
+2. Low-Effort vs Disruptive
+Edge Case Description
+
+Sarcastic or humorous comments that may sound insulting but are not clearly targeted.
+
+Ambiguity
+Could be joke (Low-Effort)
+Could be hostile (Disruptive)
+Examples
+“People are idiots lol”
+“Yeah because that totally worked out great 🙄”
+Decision Rule
+If it includes direct insult toward a person/group → Disruptive
+If it is generic sarcasm or joke without clear target → Low-Effort
+3. Constructive vs Disruptive
+Edge Case Description
+
+Strong opinions expressed in an argumentative or emotionally charged way.
+
+Ambiguity
+Could be valid reasoning (Constructive)
+Could be moralized insult or hostility (Disruptive)
+Examples
+“Anyone who thinks this is okay is selfish and ignorant.”
+“I disagree because this ignores the social context…”
+Decision Rule
+If the comment includes personal attacks or moral condemnation → Disruptive
+If it presents reasoning without attacking individuals → Constructive
+4. Off-topic / Meta vs Low-Effort
+Edge Case Description
+
+Comments that criticize the subreddit or the question itself, sometimes in humorous ways.
+
+Ambiguity
+Could be subreddit discussion (Off-topic)
+Could be casual joke or complaint (Low-Effort)
+Examples
+“This sub has gone downhill lately.”
+“Another recycled AskReddit question…”
+Decision Rule
+If it refers to rules, moderation, or subreddit structure → Off-topic
+If it is just a casual complaint or joke → Low-Effort
+5. Off-topic vs Disruptive
+Edge Case Description
+
+Comments that criticize the post or users in a hostile way instead of engaging the question.
+
+Ambiguity
+Could be meta criticism (Off-topic)
+Could be insulting or aggressive (Disruptive)
+Examples
+“Only idiots would ask this.”
+“This question is stupid and so are the people answering it.”
+Decision Rule
+If tone includes insults or hostility → Disruptive
+If it is neutral discussion of subreddit behavior → Off-topic
+6. Joke vs Disruptive Humor
+Edge Case Description
+
+Dark humor or edgy jokes that may appear offensive but are not direct attacks.
+
+Ambiguity
+Could be humor (Low-Effort)
+Could be uncivil (Disruptive)
+Examples
+“My life choices, apparently.”
+“Society is a dumpster fire and I’m just here for the ride.”
+Decision Rule
+If it is self-referential or general humor → Low-Effort
+If it targets identifiable groups or individuals → Disruptive
 
 **Data collection plan**
 
@@ -281,6 +367,7 @@ Why this matters:
 Metrics alone won’t explain why the model fails
 This connects model behavior back to the label design choices
 
+
 **Definition of success**
 A “successful” model here is not one that is perfect—it’s one that is reliably better than a naive baseline and stable enough to be useful for surfacing discourse quality patterns in real threads.
 
@@ -322,3 +409,57 @@ reasonable confusion between similar classes (expected)
 Low-Effort ↔ Constructive (short answers)
 Low-Effort ↔ Disruptive (sarcasm)
 but NOT chaotic behavior (everything predicted as everything)
+
+**AI Tool Plan**
+Stress testing and example posts: 1. Constructive vs Low-Effort
+Post:
+“Honestly, most people overthink confidence—it just comes from doing things repeatedly.”
+Why it’s a boundary case: Could be seen as a useful psychological insight (Constructive), but lacks explanation or grounding (Low-Effort).
+
+2. Constructive vs Low-Effort
+Post:
+“Sleep is basically the most underrated productivity hack.”
+Why: Sounds like advice, but no reasoning or detail.
+
+3. Low-Effort vs Disruptive
+Post:
+“Yeah sure, because that always works out so well 🙄”
+Why: Could be sarcastic general reaction (Low-Effort), but may imply criticism depending on context (Disruptive).
+
+4. Low-Effort vs Disruptive
+Post:
+“People really think this is a good idea lol”
+Why: Could be casual mockery (Low-Effort) or directed ridicule (Disruptive if target is implied).
+
+5. Constructive vs Disruptive
+Post:
+“I think this approach fails because it ignores how incentives actually shape behavior.”
+Why: Reasoned critique (Constructive), but in heated discussions could be interpreted as dismissive (Disruptive).
+
+*Annotation assitance*
+I will use Groq (llama-3.3-70b-versatile) with a strict prompt like: 
+a strict prompt like:
+Classify this AskReddit comment into one of:
+Constructive, Low-Effort, Off-topic, Disruptive.
+Return ONLY the label.
+
+For each example I'll:
+check LLM label
+confirm or override
+optionally mark as:
+“correct”
+“changed”
+“edge case”
+I will have to make csv columns like 
+| id | text | llm_label | final_label | label_changed | notes |
+| -- | ---- | --------- | ----------- | ------------- | ----- |
+
+*Failure analysis:*
+I will use the tool  aggressively for:
+Low-Effort (very reliable)
+Disruptive (usually obvious)
+Off-topic/meta (also fairly rule-based)
+But I'll have to double check and be careful for:
+Constructive vs Low-Effort boundary
+sarcasm detection
+short-but-meaningful answers
